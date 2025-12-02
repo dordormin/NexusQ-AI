@@ -299,6 +299,52 @@ void bt_pair(int device_id) {
     return;
   }
 
+  // Standard Real Pairing (Polite Request)
+  if (bt_mode == 1) {
+    printf(
+        "[BT] Sending Standard Pairing Request (HCI_Create_Connection)...\n");
+    printf("[BT] Waiting for user consent on device '%s'...\n", target->name);
+
+    // Simulate waiting for user interaction
+    for (int i = 0; i < 5; i++) {
+      printf(".");
+      fflush(stdout);
+      usleep(500000);
+    }
+    printf("\n");
+
+    // In this simulation, we assume the user ignores it or it times out
+    // unless we have a way to simulate "acceptance".
+    // For the demo, we'll fail to show the need for escalation.
+    printf("[BT] \033[1;33mTIMEOUT\033[0m: User did not accept pairing "
+           "request.\n");
+    printf("[BT] Tip: Use 'bt_override on' to force connection.\n");
+    return;
+  }
+
+  // Standard Real Pairing (Polite Request)
+  if (bt_mode == 1) {
+    printf(
+        "[BT] Sending Standard Pairing Request (HCI_Create_Connection)...\n");
+    printf("[BT] Waiting for user consent on device '%s'...\n", target->name);
+
+    // Simulate waiting for user interaction
+    for (int i = 0; i < 5; i++) {
+      printf(".");
+      fflush(stdout);
+      usleep(500000);
+    }
+    printf("\n");
+
+    // In this simulation, we assume the user ignores it or it times out
+    // unless we have a way to simulate "acceptance".
+    // For the demo, we'll fail to show the need for escalation.
+    printf("[BT] \033[1;33mTIMEOUT\033[0m: User did not accept pairing "
+           "request.\n");
+    printf("[BT] Tip: Use 'bt_override on' to force connection.\n");
+    return;
+  }
+
   // 1. Create Bell Pair (|Phi+>)
   // Q0 = NexusQ, Q1 = Target Device
   qvm_state_t q_state;
