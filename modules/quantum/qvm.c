@@ -128,6 +128,10 @@ void qvm_apply_gate(qvm_state_t *state, qvm_gate_t *gate) {
       qnoise_apply(NULL, gate->control);
     }
   }
+
+  // QMonitor Telemetry
+  extern void qmonitor_record_gate(int gate_type);
+  qmonitor_record_gate(gate->type);
 }
 
 void qvm_measure(qvm_state_t *state, int qubit) {
@@ -277,10 +281,19 @@ void qvm_execute_from_text(const char *circuit_text) {
   qvm_init(&state, circuit.num_qubits);
 
   // Execute
+  clock_t start = clock();
   qvm_execute_circuit(&state, &circuit);
+  clock_t end = clock();
+  double time_ms = ((double)(end - start)) / CLOCKS_PER_SEC * 1000.0;
 
   // Print results
   qvm_print_state(&state);
+
+  // QMonitor Telemetry
+  extern void qmonitor_record_execution(const char *name, int qubits, int gates,
+                                        double time_ms, int success);
+  qmonitor_record_execution("shell_exec", circuit.num_qubits, circuit.num_gates,
+                            time_ms, 1);
 
   // Cleanup
   qvm_free(&state);
