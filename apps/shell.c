@@ -433,6 +433,27 @@ void cmd_audit(const char *arg) {
 void cmd_permissions() { gov_print_permissions(); }
 void cmd_cleanup_fs() { gov_cleanup_filesystem(); }
 
+// --- Quantum Noise ---
+extern void qnoise_set(int type, float probability);
+extern void qnoise_info();
+
+void cmd_qnoise(const char *arg) {
+  int type;
+  float prob;
+
+  if (strcmp(arg, "info") == 0 || strlen(arg) == 0) {
+    qnoise_info();
+    return;
+  }
+
+  if (sscanf(arg, "%d %f", &type, &prob) == 2) {
+    qnoise_set(type, prob);
+  } else {
+    printf("Usage: qnoise <type> <prob>\n");
+    printf("Types: 0=None, 1=BitFlip, 2=PhaseFlip, 3=Depolarizing\n");
+  }
+}
+
 void cmd_help() {
   printf("Available Commands:\n");
   printf("  sysinfo, status  : Show system resources\n");
@@ -448,6 +469,7 @@ void cmd_help() {
   printf("  qexport <fmt>    : Export results (json)\n");
   printf("  qvis <type>      : Visualize (bloch/histogram)\n");
   printf("  qprof <file>     : Profile circuit performance\n");
+  printf("  qnoise <t> <p>   : Configure quantum noise (0-3)\n");
   printf("  audit [user]     : View governance audit log\n");
   printf("  permissions      : View system permissions\n");
   printf("  cleanup          : Clean filesystem (duplicates/corrupt)\n");
@@ -1616,6 +1638,8 @@ int main() {
       cmd_permissions();
     else if (strcmp(cmd, "gov_cleanup") == 0)
       cmd_cleanup_fs();
+    else if (strncmp(cmd, "qnoise", 6) == 0)
+      cmd_qnoise(cmd + 7);
     else {
       printf("Unknown command: %s\n", cmd);
     }

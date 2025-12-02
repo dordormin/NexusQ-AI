@@ -117,7 +117,16 @@ void qvm_apply_gate(qvm_state_t *state, qvm_gate_t *gate) {
     qvm_measure(state, gate->target);
     break;
   default:
-    printf("[QVM] Unknown gate type\n");
+    printf("[QVM] Unknown gate type %d\n", gate->type);
+  }
+
+  // Apply Noise (if enabled)
+  extern void qnoise_apply(void *ctx, int qubit_idx);
+  if (gate->type != GATE_MEASURE) {
+    qnoise_apply(NULL, gate->target);
+    if (gate->type == GATE_CNOT) {
+      qnoise_apply(NULL, gate->control);
+    }
   }
 }
 

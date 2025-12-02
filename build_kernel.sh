@@ -38,6 +38,7 @@ gcc -o nexus_kernel \
     modules/quantum/qexport.c \
     modules/quantum/qvis.c \
     modules/quantum/qprof.c \
+    modules/quantum/noise.c \
     kernel/core/governance.c \
     modules/graphics/gpu.c \
     modules/ui/compositor.c \
@@ -93,6 +94,7 @@ gcc -o nexus_shell \
     modules/quantum/qexport.c \
     modules/quantum/qvis.c \
     modules/quantum/qprof.c \
+    modules/quantum/noise.c \
     kernel/core/governance.c \
     modules/graphics/gpu.c \
     modules/ui/compositor.c \
