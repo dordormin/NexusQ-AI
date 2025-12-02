@@ -509,6 +509,20 @@ void cmd_qaoa_demo() { qaoa_run_optimization(); }
 extern void teleport_run_demo();
 void cmd_teleport_demo() { teleport_run_demo(); }
 
+// --- Bluetooth Wrappers ---
+extern void bt_init();
+extern void bt_scan();
+extern void bt_pair(int device_id);
+
+void cmd_bt_scan() { bt_scan(); }
+void cmd_bt_pair(const char *arg) {
+  int id = atoi(arg);
+  if (id > 0)
+    bt_pair(id);
+  else
+    printf("Usage: bt_pair <device_id>\n");
+}
+
 void cmd_help() {
   printf("Available Commands:\n");
   printf("  sysinfo, status  : Show system resources\n");
@@ -531,6 +545,9 @@ void cmd_help() {
   printf("  qmap_demo        : Run Quantum Topology Mapper (Transpiler)\n");
   printf("  qaoa_demo        : Run QAOA Optimization (IoT/Drone Swarm)\n");
   printf("  teleport_demo    : Run Quantum Teleportation Protocol\n");
+  printf(
+      "  bt_scan          : Scan for Bluetooth devices (Quantum Enhanced)\n");
+  printf("  bt_pair <id>     : Pair with device using Quantum Handshake\n");
   printf("  audit [user]     : View governance audit log\n");
   printf("  permissions      : View system permissions\n");
   printf("  cleanup          : Clean filesystem (duplicates/corrupt)\n");
@@ -1511,6 +1528,9 @@ int main() {
   printf("Welcome to NexusQ-AI Shell (nsh) v1.0\n");
   printf("Type 'help' for commands.\n");
 
+  // Initialize Subsystems
+  bt_init();
+
   // Create a dummy file for ls demo if none exists
   // (In a real OS, files persist, here we rely on what app_demo created
   // or create one) Actually shell is a separate process, so it won't see
@@ -1713,6 +1733,10 @@ int main() {
       cmd_qaoa_demo();
     else if (strcmp(cmd, "teleport_demo") == 0)
       cmd_teleport_demo();
+    else if (strcmp(cmd, "bt_scan") == 0)
+      cmd_bt_scan();
+    else if (strncmp(cmd, "bt_pair", 7) == 0)
+      cmd_bt_pair(cmd + 8);
     else {
       printf("Unknown command: %s\n", cmd);
     }
