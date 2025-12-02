@@ -123,5 +123,5 @@ gcc -o nexus_shell \
     -I modules/graphics/include \
     -I modules/contracts/include \
     -I modules/quantum/include \
-    -lm
+    -lm -ldl
 

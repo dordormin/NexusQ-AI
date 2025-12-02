@@ -513,6 +513,8 @@ void cmd_teleport_demo() { teleport_run_demo(); }
 extern void bt_init();
 extern void bt_scan();
 extern void bt_pair(int device_id);
+extern void bt_set_mode(int mode);
+extern void bt_send(const char *msg);
 
 void cmd_bt_scan() { bt_scan(); }
 void cmd_bt_pair(const char *arg) {
@@ -521,6 +523,20 @@ void cmd_bt_pair(const char *arg) {
     bt_pair(id);
   else
     printf("Usage: bt_pair <device_id>\n");
+}
+void cmd_bt_mode(const char *arg) {
+  if (strcmp(arg, "real") == 0)
+    bt_set_mode(1);
+  else if (strcmp(arg, "virtual") == 0)
+    bt_set_mode(0);
+  else
+    printf("Usage: bt_mode <real|virtual>\n");
+}
+void cmd_bt_send(const char *arg) {
+  if (strlen(arg) > 0)
+    bt_send(arg);
+  else
+    printf("Usage: bt_send <message>\n");
 }
 
 void cmd_help() {
@@ -548,6 +564,8 @@ void cmd_help() {
   printf(
       "  bt_scan          : Scan for Bluetooth devices (Quantum Enhanced)\n");
   printf("  bt_pair <id>     : Pair with device using Quantum Handshake\n");
+  printf("  bt_mode <mode>   : Switch Bluetooth Mode (real/virtual)\n");
+  printf("  bt_send <msg>    : Send message to paired device\n");
   printf("  audit [user]     : View governance audit log\n");
   printf("  permissions      : View system permissions\n");
   printf("  cleanup          : Clean filesystem (duplicates/corrupt)\n");
@@ -1737,6 +1755,10 @@ int main() {
       cmd_bt_scan();
     else if (strncmp(cmd, "bt_pair", 7) == 0)
       cmd_bt_pair(cmd + 8);
+    else if (strncmp(cmd, "bt_mode", 7) == 0)
+      cmd_bt_mode(cmd + 8);
+    else if (strncmp(cmd, "bt_send", 7) == 0)
+      cmd_bt_send(cmd + 8);
     else {
       printf("Unknown command: %s\n", cmd);
     }
