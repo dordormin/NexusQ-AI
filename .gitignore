@@ -1,0 +1,24 @@
+# Build Artifacts
+nexus_kernel
+nexus_shell
+qnetd
+app_demo
+test_qvm
+test_lfs
+test_sched
+test_qec
+test_governance
+*.o
+*.log
+nexus_disk.dat
+
+# CMake
+cmake-build-debug/
+CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
+Makefile
+
+# IDE
+.idea/
+.vscode/
