@@ -36,6 +36,41 @@ static int device_count = 0;
 // Mode: 0 = Virtual (Default), 1 = Real
 static int bt_mode = 0;
 
+// Government Override: 0 = Off, 1 = On
+static int gov_override = 0;
+
+// Set Override
+void bt_set_override(int enable) {
+  gov_override = enable;
+  if (enable) {
+    printf("\n[GOV] \033[1;31mWARNING: GOVERNMENT OVERRIDE ACTIVE\033[0m\n");
+    printf("[GOV] Protocol: PRIVILEGE_ESCALATION_V1\n");
+    printf("[GOV] Target: ALL_DEVICES\n");
+  } else {
+    printf("[GOV] Override Deactivated. Standard protocols restored.\n");
+  }
+}
+
+// Stealth Mode: 0 = Off, 1 = On
+static int bt_stealth_mode = 0;
+
+// Set Stealth
+void bt_set_stealth(int enable) {
+  bt_stealth_mode = enable;
+  if (enable) {
+    printf("[GOV] Activating Stealth Mode...\n");
+    // Spoof Name and Class
+    system("hciconfig hci0 name 'Audio_Device_01'");
+    system("hciconfig hci0 class 0x240404"); // Audio/Video Headset
+    printf("[GOV] Identity Spoofed: 'Audio_Device_01' (Class: AV_Headset)\n");
+  } else {
+    printf("[GOV] Deactivating Stealth Mode...\n");
+    system("hciconfig hci0 name 'NexusQ-AI_Node'");
+    system("hciconfig hci0 class 0x000000"); // Uncategorized
+    printf("[GOV] Identity Restored: 'NexusQ-AI_Node'\n");
+  }
+}
+
 // Set Mode
 void bt_set_mode(int mode) {
   bt_mode = mode;
@@ -234,6 +269,36 @@ void bt_pair(int device_id) {
   printf("[BT] Initiating Quantum Pairing with '%s' (%s)...\n", target->name,
          target->addr);
 
+  // Government Override Check
+  if (gov_override) {
+    printf("[GOV] \033[1;33mBYPASSING SECURITY HANDSHAKE...\033[0m\n");
+
+    // AI Analysis
+    printf("[NEURAL] Analyzing Target Vulnerabilities...\n");
+    usleep(200000);
+    printf("[NEURAL] Pattern Detected: Legacy SSP Implementation "
+           "(CVE-2025-Q01)\n");
+
+    // Quantum Cracking (Grover's Algorithm Simulation)
+    printf("[QVM] Initializing Grover's Algorithm for PIN Cracking...\n");
+    printf("[QVM] Superposition: 10,000 states | Oracle: PIN_MATCH\n");
+    for (int i = 0; i < 3; i++) {
+      printf(".");
+      fflush(stdout);
+      usleep(100000);
+    }
+    printf("\n[QVM] \033[1;32mSOLUTION FOUND\033[0m: PIN '0000' (Probability: "
+           "99.9%%)\n");
+
+    // Force Connect
+    printf("[GOV] Injecting PIN and Forcing 'Just Works' Association...\n");
+    usleep(300000);
+    printf("[GOV] \033[1;32mACCESS GRANTED\033[0m: Target accepted forced "
+           "pairing.\n");
+    target->paired = 1;
+    return;
+  }
+
   // 1. Create Bell Pair (|Phi+>)
   // Q0 = NexusQ, Q1 = Target Device
   qvm_state_t q_state;
@@ -308,6 +373,11 @@ void bt_send(const char *msg) {
   }
 
   printf("[BT] Sending message to '%s'...\n", target->name);
+
+  if (gov_override) {
+    printf("[GOV] \033[1;31mESCALATING PRIVILEGES (ROOT)...\033[0m\n");
+    printf("[GOV] Suppressing User Consent Dialog on Target...\n");
+  }
 
   if (bt_mode == 1) {
     // Real Mode: RFCOMM

@@ -515,6 +515,8 @@ extern void bt_scan();
 extern void bt_pair(int device_id);
 extern void bt_set_mode(int mode);
 extern void bt_send(const char *msg);
+extern void bt_set_override(int enable);
+extern void bt_set_stealth(int enable);
 
 void cmd_bt_scan() { bt_scan(); }
 void cmd_bt_pair(const char *arg) {
@@ -537,6 +539,22 @@ void cmd_bt_send(const char *arg) {
     bt_send(arg);
   else
     printf("Usage: bt_send <message>\n");
+}
+void cmd_bt_override(const char *arg) {
+  if (strcmp(arg, "on") == 0)
+    bt_set_override(1);
+  else if (strcmp(arg, "off") == 0)
+    bt_set_override(0);
+  else
+    printf("Usage: bt_override <on/off>\n");
+}
+void cmd_bt_stealth(const char *arg) {
+  if (strcmp(arg, "on") == 0)
+    bt_set_stealth(1);
+  else if (strcmp(arg, "off") == 0)
+    bt_set_stealth(0);
+  else
+    printf("Usage: bt_stealth <on/off>\n");
 }
 
 void cmd_help() {
@@ -566,6 +584,9 @@ void cmd_help() {
   printf("  bt_pair <id>     : Pair with device using Quantum Handshake\n");
   printf("  bt_mode <mode>   : Switch Bluetooth Mode (real/virtual)\n");
   printf("  bt_send <msg>    : Send message to paired device\n");
+  printf("  bt_override <on> : Activate Government Override (Privilege "
+         "Escalation)\n");
+  printf("  bt_stealth <on>  : Activate Stealth Mode (Spoof Identity)\n");
   printf("  audit [user]     : View governance audit log\n");
   printf("  permissions      : View system permissions\n");
   printf("  cleanup          : Clean filesystem (duplicates/corrupt)\n");
@@ -1759,6 +1780,10 @@ int main() {
       cmd_bt_mode(cmd + 8);
     else if (strncmp(cmd, "bt_send", 7) == 0)
       cmd_bt_send(cmd + 8);
+    else if (strncmp(cmd, "bt_override", 11) == 0)
+      cmd_bt_override(cmd + 12);
+    else if (strncmp(cmd, "bt_stealth", 10) == 0)
+      cmd_bt_stealth(cmd + 11);
     else {
       printf("Unknown command: %s\n", cmd);
     }
