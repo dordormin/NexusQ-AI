@@ -505,6 +505,10 @@ void cmd_qmap_demo() { qmap_run_demo(); }
 extern void qaoa_run_optimization();
 void cmd_qaoa_demo() { qaoa_run_optimization(); }
 
+// --- Teleport Demo ---
+extern void teleport_run_demo();
+void cmd_teleport_demo() { teleport_run_demo(); }
+
 void cmd_help() {
   printf("Available Commands:\n");
   printf("  sysinfo, status  : Show system resources\n");
@@ -526,6 +530,7 @@ void cmd_help() {
   printf("  qnn_demo [e] [lr]: Train Quantum Neural Network (XOR)\n");
   printf("  qmap_demo        : Run Quantum Topology Mapper (Transpiler)\n");
   printf("  qaoa_demo        : Run QAOA Optimization (IoT/Drone Swarm)\n");
+  printf("  teleport_demo    : Run Quantum Teleportation Protocol\n");
   printf("  audit [user]     : View governance audit log\n");
   printf("  permissions      : View system permissions\n");
   printf("  cleanup          : Clean filesystem (duplicates/corrupt)\n");
@@ -1706,6 +1711,8 @@ int main() {
       cmd_qmap_demo();
     else if (strcmp(cmd, "qaoa_demo") == 0)
       cmd_qaoa_demo();
+    else if (strcmp(cmd, "teleport_demo") == 0)
+      cmd_teleport_demo();
     else {
       printf("Unknown command: %s\n", cmd);
     }

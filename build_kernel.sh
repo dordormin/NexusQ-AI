@@ -25,6 +25,7 @@ gcc -o nexus_kernel \
     modules/crypto/ledgerfs/hash.c \
     modules/crypto/wallet/wallet.c \
     modules/quantum/qaoa.c \
+    modules/quantum/teleport.c \
     modules/quantum/dqc.c \
     modules/quantum/qns_layer.c \
     modules/quantum/tomography.c \
@@ -86,6 +87,7 @@ gcc -o nexus_shell \
     modules/crypto/ledgerfs/hash.c \
     modules/crypto/wallet/wallet.c \
     modules/quantum/qaoa.c \
+    modules/quantum/teleport.c \
     modules/quantum/dqc.c \
     modules/quantum/qns_layer.c \
     modules/quantum/tomography.c \
