@@ -501,6 +501,10 @@ void cmd_qnn_demo(const char *arg) {
 extern void qmap_run_demo();
 void cmd_qmap_demo() { qmap_run_demo(); }
 
+// --- QAOA Demo ---
+extern void qaoa_run_optimization();
+void cmd_qaoa_demo() { qaoa_run_optimization(); }
+
 void cmd_help() {
   printf("Available Commands:\n");
   printf("  sysinfo, status  : Show system resources\n");
@@ -521,6 +525,7 @@ void cmd_help() {
   printf("  qkd_demo <n> [e] : Run QKD Demo (BB84) with n bits\n");
   printf("  qnn_demo [e] [lr]: Train Quantum Neural Network (XOR)\n");
   printf("  qmap_demo        : Run Quantum Topology Mapper (Transpiler)\n");
+  printf("  qaoa_demo        : Run QAOA Optimization (IoT/Drone Swarm)\n");
   printf("  audit [user]     : View governance audit log\n");
   printf("  permissions      : View system permissions\n");
   printf("  cleanup          : Clean filesystem (duplicates/corrupt)\n");
@@ -1699,6 +1704,8 @@ int main() {
       cmd_qnn_demo(cmd + 9);
     else if (strcmp(cmd, "qmap_demo") == 0)
       cmd_qmap_demo();
+    else if (strcmp(cmd, "qaoa_demo") == 0)
+      cmd_qaoa_demo();
     else {
       printf("Unknown command: %s\n", cmd);
     }
