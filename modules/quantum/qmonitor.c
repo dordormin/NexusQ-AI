@@ -65,39 +65,62 @@ void qmonitor_record_gate(int gate_type) {
   }
 }
 
+// External Getters
+extern void sched_get_stats(int *active_procs, double *avg_coherence);
+extern void qec_get_stats(int *detected, int *corrected);
+extern void qkd_get_stats(int *keys, float *qber);
+
 // Print dashboard
 void qmonitor_dashboard() {
+  // Fetch Stats
+  int active_procs = 0;
+  double avg_coherence = 0.0;
+  sched_get_stats(&active_procs, &avg_coherence);
+
+  int qec_detected = 0, qec_corrected = 0;
+  qec_get_stats(&qec_detected, &qec_corrected);
+
+  int qkd_keys = 0;
+  float qkd_qber = 0.0f;
+  qkd_get_stats(&qkd_keys, &qkd_qber);
+
   printf("\n");
   printf("╔════════════════════════════════════════════════════════════════════"
          "══╗\n");
-  printf("║                  QUANTUM SYSTEM MONITOR - DASHBOARD                "
+  printf("║                  QUANTUM SYSTEM MONITOR - MISSION CONTROL          "
          "  ║\n");
   printf("╚════════════════════════════════════════════════════════════════════"
          "══╝\n");
-  printf("\n");
 
-  // System Overview
-  printf("┌─── System Overview "
-         "───────────────────────────────────────────────┐\n");
-  printf("│ Total Executions:     %-10d                                   │\n",
-         total_executions);
-  printf("│ Successful:           %-10d (%.1f%%)                           │\n",
-         successful_executions,
+  // Row 1: System Health & Network
+  printf("┌─── System Health ──────────────────┐  ┌─── Network Status "
+         "─────────────────┐\n");
+  printf("│ Active Processes:     %-5d        │  │ Keys Generated:       %-5d  "
+         "      │\n",
+         active_procs, qkd_keys);
+  printf("│ Avg Coherence:        %-5.1f us    │  │ Last QBER:            "
+         "%-5.2f%%       │\n",
+         avg_coherence, qkd_qber);
+  printf("└────────────────────────────────────┘  "
+         "└────────────────────────────────────┘\n");
+
+  // Row 2: Reliability & Execution
+  printf("┌─── Reliability ────────────────────┐  ┌─── Execution Stats "
+         "────────────────┐\n");
+  printf("│ Errors Detected:      %-5d        │  │ Total Executions:     %-5d  "
+         "      │\n",
+         qec_detected, total_executions);
+  printf("│ Errors Corrected:     %-5d        │  │ Success Rate:         "
+         "%-5.1f%%       │\n",
+         qec_corrected,
          total_executions > 0
              ? (100.0 * successful_executions / total_executions)
              : 0.0);
-  printf("│ Failed:               %-10d                                   │\n",
-         total_executions - successful_executions);
-  printf("│ Total Exec Time:      %.2f ms                                  │\n",
-         total_execution_time);
-  printf("│ Avg Exec Time:        %.2f ms                                  │\n",
-         total_executions > 0 ? total_execution_time / total_executions : 0.0);
-  printf("└───────────────────────────────────────────────────────────────────┘"
-         "\n");
-  printf("\n");
+  printf("└────────────────────────────────────┘  "
+         "└────────────────────────────────────┘\n");
 
   // Gate Usage
-  printf("┌─── Gate Usage Statistics "
+  printf("\n┌─── Gate Usage Statistics "
          "─────────────────────────────────────────┐\n");
   const char *gate_names[] = {"H", "X",    "Y",  "Z",    "T",
                               "S", "CNOT", "CZ", "SWAP", "M"};
@@ -110,9 +133,7 @@ void qmonitor_dashboard() {
   for (int i = 0; i < 10; i++) {
     if (gate_usage[i] > 0) {
       printf("│ %-6s: %4d  ", gate_names[i], gate_usage[i]);
-
-      // ASCII bar chart
-      int bar_len = max_usage > 0 ? (gate_usage[i] * 30 / max_usage) : 0;
+      int bar_len = max_usage > 0 ? (gate_usage[i] * 40 / max_usage) : 0;
       for (int j = 0; j < bar_len; j++)
         printf("█");
       printf("\n");
@@ -120,11 +141,10 @@ void qmonitor_dashboard() {
   }
   printf("└───────────────────────────────────────────────────────────────────┘"
          "\n");
-  printf("\n");
 
   // Recent Executions
-  printf(
-      "┌─── Recent Executions (Last 10) ──────────────────────────────────┐\n");
+  printf("\n┌─── Recent Executions (Last 10) "
+         "──────────────────────────────────┐\n");
   printf("│ %-20s | %6s | %6s | %10s | %s\n", "Circuit", "Qubits", "Gates",
          "Time(ms)", "Status");
   printf("├───────────────────────────────────────────────────────────────────┤"
@@ -139,7 +159,7 @@ void qmonitor_dashboard() {
 
   if (history_count == 0) {
     printf("│ No executions recorded yet.                                      "
-           " │\n");
+           "│\n");
   }
   printf("└───────────────────────────────────────────────────────────────────┘"
          "\n");

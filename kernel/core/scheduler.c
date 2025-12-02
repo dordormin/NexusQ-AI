@@ -35,6 +35,20 @@ void sched_init(void) {
          COHERENCE_THRESHOLD);
 }
 
+// Get Scheduler Statistics
+void sched_get_stats(int *active_procs, double *avg_coherence) {
+  *active_procs = proc_count;
+  double total_coh = 0;
+  int q_procs = 0;
+  for (int i = 0; i < MAX_RUNNING_PROCS; i++) {
+    if (runqueue[i] && runqueue[i]->num_qubits > 0) {
+      total_coh += runqueue[i]->t_coherence;
+      q_procs++;
+    }
+  }
+  *avg_coherence = (q_procs > 0) ? (total_coh / q_procs) : 0.0;
+}
+
 void sched_submit(struct qproc *p) {
   if (proc_count >= MAX_RUNNING_PROCS) {
     printf("[SCHED] Error: RunQueue Full!\n");

@@ -15,6 +15,14 @@ typedef struct {
 } qec_sim_t;
 
 static qec_sim_t qec_state;
+static int total_errors_detected = 0;
+static int total_errors_corrected = 0;
+
+// Get QEC Statistics
+void qec_get_stats(int *detected, int *corrected) {
+  *detected = total_errors_detected;
+  *corrected = total_errors_corrected;
+}
 
 // Initialize logical qubit |0>
 void qec_sim_init() {
@@ -73,14 +81,20 @@ void qec_sim_correct() {
     // 000 -> 100 (S1=1, S2=0) -> Error Q0
     printf("[QEC] \033[1;32mCORRECTING\033[0m: Error detected on Qubit 0\n");
     qec_state.physical_qubits[0] ^= 1;
+    total_errors_detected++;
+    total_errors_corrected++;
   } else if (s1 == 1 && s2 == 1) {
     // 000 -> 010 (S1=1, S2=1) -> Error Q1
     printf("[QEC] \033[1;32mCORRECTING\033[0m: Error detected on Qubit 1\n");
     qec_state.physical_qubits[1] ^= 1;
+    total_errors_detected++;
+    total_errors_corrected++;
   } else if (s1 == 0 && s2 == 1) {
     // 000 -> 001 (S1=0, S2=1) -> Error Q2
     printf("[QEC] \033[1;32mCORRECTING\033[0m: Error detected on Qubit 2\n");
     qec_state.physical_qubits[2] ^= 1;
+    total_errors_detected++;
+    total_errors_corrected++;
   }
 
   printf("[QEC] Post-Correction State: |%d%d%d>\n",

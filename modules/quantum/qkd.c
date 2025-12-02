@@ -23,6 +23,16 @@ static int *bob_measurements = NULL;
 static int *final_key = NULL;
 static int final_key_len = 0;
 
+// Stats
+static int total_keys_generated = 0;
+static float last_qber = 0.0f;
+
+// Get QKD Statistics
+void qkd_get_stats(int *keys, float *qber) {
+  *keys = total_keys_generated;
+  *qber = last_qber;
+}
+
 // Initialize QKD Session
 void qkd_init(int n_bits) {
   if (alice_bases)
@@ -137,11 +147,14 @@ void qkd_run_bb84(int n_bits, int eavesdrop) {
   printf("Errors Detected: %d\n", errors);
   printf("QBER (Quantum Bit Error Rate): %.2f%%\n", qber);
 
+  last_qber = qber;
+
   if (qber > 10.0f) {
     printf("[Security] \033[1;31mHIGH QBER DETECTED! Eavesdropper present. Key "
            "discarded.\033[0m\n");
   } else {
     printf("[Security] \033[1;32mChannel Secure. Key Accepted.\033[0m\n");
+    total_keys_generated += final_key_len;
     printf("Final Key (Hex): ");
     for (int i = 0; i < final_key_len / 4 && i < 16; i++) {
       int val = 0;
