@@ -312,10 +312,16 @@ void cmd_qexec(const char *filename) {
   }
   buffer[len] = '\0';
 
+  // QHAL Integration: Map to Hardware
+  printf("[QHAL] Mapping circuit to 4x4 Superconducting Grid...\n");
+  extern void qhal_print_topology();
+  qhal_print_topology();
+
   // Parse and execute circuit
   // QVM execution happens in userspace
   extern void qvm_execute_from_text(const char *text);
 
+  printf("[QVM] Executing mapped circuit...\n");
   qvm_execute_from_text(buffer);
 }
 

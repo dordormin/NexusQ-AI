@@ -138,9 +138,14 @@ int lfs_delete_file(const char *name, const char *requestor) {
       // "Delete" by removing from registry and freeing memory
       kfree(global_file_registry[i]->data);
       kfree(global_file_registry[i]);
-      global_file_registry[i] = NULL;
 
-      // Compact list (optional, skipping for now)
+      // Compact list: Shift remaining elements left
+      for (int j = i; j < global_file_count - 1; j++) {
+        global_file_registry[j] = global_file_registry[j + 1];
+      }
+      global_file_registry[global_file_count - 1] = NULL;
+      global_file_count--;
+
       printf("[LFS] Deleted File '%s' by '%s'.\n", name, requestor);
       return 0;
     }
