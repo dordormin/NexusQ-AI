@@ -458,6 +458,25 @@ void cmd_qnoise(const char *arg) {
 extern void qec_run_demo();
 void cmd_qec_demo() { qec_run_demo(); }
 
+// --- QKD Demo ---
+extern void qkd_run_bb84(int n_bits, int eavesdrop);
+
+void cmd_qkd_demo(const char *arg) {
+  int bits = 50;
+  int eve = 0;
+
+  if (arg && strlen(arg) > 0) {
+    sscanf(arg, "%d %d", &bits, &eve);
+  }
+
+  if (bits < 10)
+    bits = 10;
+  if (bits > 1000)
+    bits = 1000;
+
+  qkd_run_bb84(bits, eve);
+}
+
 void cmd_help() {
   printf("Available Commands:\n");
   printf("  sysinfo, status  : Show system resources\n");
@@ -475,6 +494,7 @@ void cmd_help() {
   printf("  qprof <file>     : Profile circuit performance\n");
   printf("  qnoise <t> <p>   : Configure quantum noise (0-3)\n");
   printf("  qec_demo         : Run Quantum Error Correction Demo\n");
+  printf("  qkd_demo <n> [e] : Run QKD Demo (BB84) with n bits\n");
   printf("  audit [user]     : View governance audit log\n");
   printf("  permissions      : View system permissions\n");
   printf("  cleanup          : Clean filesystem (duplicates/corrupt)\n");
@@ -1647,6 +1667,8 @@ int main() {
       cmd_qnoise(cmd + 7);
     else if (strcmp(cmd, "qec_demo") == 0)
       cmd_qec_demo();
+    else if (strncmp(cmd, "qkd_demo", 8) == 0)
+      cmd_qkd_demo(cmd + 9);
     else {
       printf("Unknown command: %s\n", cmd);
     }
