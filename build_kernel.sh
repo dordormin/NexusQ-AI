@@ -42,6 +42,8 @@ gcc -o nexus_kernel \
     modules/quantum/qec_sim.c \
     modules/quantum/qkd.c \
     modules/neural/qnn_xor.c \
+    modules/quantum/qhal.c \
+    modules/quantum/mapper.c \
     kernel/core/governance.c \
     modules/graphics/gpu.c \
     modules/ui/compositor.c \
@@ -101,6 +103,8 @@ gcc -o nexus_shell \
     modules/quantum/qec_sim.c \
     modules/quantum/qkd.c \
     modules/neural/qnn_xor.c \
+    modules/quantum/qhal.c \
+    modules/quantum/mapper.c \
     kernel/core/governance.c \
     modules/graphics/gpu.c \
     modules/ui/compositor.c \

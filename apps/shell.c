@@ -488,13 +488,12 @@ void cmd_qnn_demo(const char *arg) {
     sscanf(arg, "%d %lf", &epochs, &lr);
   }
 
-  if (epochs < 10)
-    epochs = 10;
-  if (epochs > 10000)
-    epochs = 10000;
-
   qnn_train_xor(epochs, lr);
 }
+
+// --- QHAL Mapper Demo ---
+extern void qmap_run_demo();
+void cmd_qmap_demo() { qmap_run_demo(); }
 
 void cmd_help() {
   printf("Available Commands:\n");
@@ -515,6 +514,7 @@ void cmd_help() {
   printf("  qec_demo         : Run Quantum Error Correction Demo\n");
   printf("  qkd_demo <n> [e] : Run QKD Demo (BB84) with n bits\n");
   printf("  qnn_demo [e] [lr]: Train Quantum Neural Network (XOR)\n");
+  printf("  qmap_demo        : Run Quantum Topology Mapper (Transpiler)\n");
   printf("  audit [user]     : View governance audit log\n");
   printf("  permissions      : View system permissions\n");
   printf("  cleanup          : Clean filesystem (duplicates/corrupt)\n");
@@ -1691,6 +1691,8 @@ int main() {
       cmd_qkd_demo(cmd + 9);
     else if (strncmp(cmd, "qnn_demo", 8) == 0)
       cmd_qnn_demo(cmd + 9);
+    else if (strcmp(cmd, "qmap_demo") == 0)
+      cmd_qmap_demo();
     else {
       printf("Unknown command: %s\n", cmd);
     }
