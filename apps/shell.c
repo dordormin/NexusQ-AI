@@ -477,6 +477,25 @@ void cmd_qkd_demo(const char *arg) {
   qkd_run_bb84(bits, eve);
 }
 
+// --- QNN Demo ---
+extern void qnn_train_xor(int epochs, double lr);
+
+void cmd_qnn_demo(const char *arg) {
+  int epochs = 1000;
+  double lr = 0.1;
+
+  if (arg && strlen(arg) > 0) {
+    sscanf(arg, "%d %lf", &epochs, &lr);
+  }
+
+  if (epochs < 10)
+    epochs = 10;
+  if (epochs > 10000)
+    epochs = 10000;
+
+  qnn_train_xor(epochs, lr);
+}
+
 void cmd_help() {
   printf("Available Commands:\n");
   printf("  sysinfo, status  : Show system resources\n");
@@ -495,6 +514,7 @@ void cmd_help() {
   printf("  qnoise <t> <p>   : Configure quantum noise (0-3)\n");
   printf("  qec_demo         : Run Quantum Error Correction Demo\n");
   printf("  qkd_demo <n> [e] : Run QKD Demo (BB84) with n bits\n");
+  printf("  qnn_demo [e] [lr]: Train Quantum Neural Network (XOR)\n");
   printf("  audit [user]     : View governance audit log\n");
   printf("  permissions      : View system permissions\n");
   printf("  cleanup          : Clean filesystem (duplicates/corrupt)\n");
@@ -1669,6 +1689,8 @@ int main() {
       cmd_qec_demo();
     else if (strncmp(cmd, "qkd_demo", 8) == 0)
       cmd_qkd_demo(cmd + 9);
+    else if (strncmp(cmd, "qnn_demo", 8) == 0)
+      cmd_qnn_demo(cmd + 9);
     else {
       printf("Unknown command: %s\n", cmd);
     }
