@@ -454,6 +454,10 @@ void cmd_qnoise(const char *arg) {
   }
 }
 
+// --- QEC Demo ---
+extern void qec_run_demo();
+void cmd_qec_demo() { qec_run_demo(); }
+
 void cmd_help() {
   printf("Available Commands:\n");
   printf("  sysinfo, status  : Show system resources\n");
@@ -470,6 +474,7 @@ void cmd_help() {
   printf("  qvis <type>      : Visualize (bloch/histogram)\n");
   printf("  qprof <file>     : Profile circuit performance\n");
   printf("  qnoise <t> <p>   : Configure quantum noise (0-3)\n");
+  printf("  qec_demo         : Run Quantum Error Correction Demo\n");
   printf("  audit [user]     : View governance audit log\n");
   printf("  permissions      : View system permissions\n");
   printf("  cleanup          : Clean filesystem (duplicates/corrupt)\n");
@@ -1640,6 +1645,8 @@ int main() {
       cmd_cleanup_fs();
     else if (strncmp(cmd, "qnoise", 6) == 0)
       cmd_qnoise(cmd + 7);
+    else if (strcmp(cmd, "qec_demo") == 0)
+      cmd_qec_demo();
     else {
       printf("Unknown command: %s\n", cmd);
     }
