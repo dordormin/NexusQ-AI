@@ -1650,6 +1650,8 @@ int main() {
     else {
       printf("Unknown command: %s\n", cmd);
     }
+    fflush(stdout);
+    fflush(stdout);
 
     // Simulate a tick to keep the world moving
     nexus_simulate_tick(100);
