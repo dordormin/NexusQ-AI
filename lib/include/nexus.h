@@ -112,4 +112,17 @@ int nexus_request_entanglement(int target_node, int fidelity_percent);
 int nexus_teleport_state(int qubit_id, int pair_id);
 int nexus_qnet_qkd(int target_node, int key_len, int proto_id);
 
+// --- Governance & Security ---
+typedef enum {
+  GOV_LEVEL_PUBLIC = 0, // Anyone can access
+  GOV_LEVEL_USER = 1,   // Authenticated users
+  GOV_LEVEL_OWNER = 2,  // Only owner
+  GOV_LEVEL_ADMIN = 3,  // System admins only
+  GOV_LEVEL_SYSTEM = 4  // System only
+} gov_level_t;
+
+gov_level_t gov_get_current_level(void);
+const char *gov_get_current_user(void);
+void gov_set_user(const char *user, gov_level_t level);
+
 #endif // _NEXUS_H_

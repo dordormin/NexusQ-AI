@@ -39,6 +39,32 @@ void lfs_init(void) {
   memset(global_file_registry, 0, sizeof(global_file_registry));
   global_file_count = 0;
   lfs_load_disk();
+
+  // Ensure default structure exists
+  extern void lfs_create_default_structure(void);
+  lfs_create_default_structure();
+}
+
+void lfs_create_default_structure(void) {
+  // Root is implicitly ID 0 (handled by logic usually, but here we just ensure
+  // subdirs exist) We assume Root exists or is virtual. Create default folders
+  // if they don't exist
+
+  const char *dirs[] = {"system", "home", "quantum", "neural",
+                        "ledger", "net",  "apps",    "docs"};
+
+  for (int i = 0; i < 8; i++) {
+    if (!lfs_find_by_name(dirs[i])) {
+      lfs_inode_t *dir = lfs_create_directory(dirs[i], 0, "SYSTEM");
+
+      // Create subdirectories for /home
+      if (strcmp(dirs[i], "home") == 0 && dir) {
+        lfs_create_directory("documents", dir->inode_id, "SYSTEM");
+        lfs_create_directory("downloads", dir->inode_id, "SYSTEM");
+        lfs_create_directory("projects", dir->inode_id, "SYSTEM");
+      }
+    }
+  }
 }
 
 lfs_inode_t *lfs_find_by_name(const char *name) {
@@ -127,11 +153,18 @@ int lfs_delete_file(const char *name, const char *requestor) {
     if (global_file_registry[i] &&
         strcmp(global_file_registry[i]->filename, name) == 0) {
       // Governance Check: Ownership
+      // Governance Check: Ownership
+      // Allow if:
+      // 1. Owner matches
+      // 2. Current level is SYSTEM or ADMIN
+      gov_level_t level = gov_get_current_level();
+
       if (strcmp(global_file_registry[i]->owner_id, requestor) != 0 &&
-          strcmp(requestor, "SYSTEM") != 0) {
+          level < GOV_LEVEL_ADMIN) {
         printf("[LFS] ACCESS DENIED: '%s' cannot delete '%s'. Owner: %s, "
-               "Requestor: %s\n",
-               requestor, name, global_file_registry[i]->owner_id, requestor);
+               "Requestor: %s (Level: %d)\n",
+               requestor, name, global_file_registry[i]->owner_id, requestor,
+               level);
         return -2; // Access Denied
       }
 
@@ -170,9 +203,15 @@ lfs_inode_t *lfs_create_file(const char *name, const void *data, int size,
   if (existing) {
     // Overwrite Logic
     // Check permissions (simplified)
+    // Allow if:
+    // 1. Owner matches
+    // 2. Current level is SYSTEM or ADMIN
+    gov_level_t level = gov_get_current_level();
+
     if (owner && strcmp(existing->owner_id, owner) != 0 &&
-        strcmp(owner, "SYSTEM") != 0) {
-      printf("[LFS] Error: Permission denied to overwrite '%s'.\n", name);
+        level < GOV_LEVEL_ADMIN) {
+      printf("[LFS] Error: Permission denied to overwrite '%s'. Level: %d\n",
+             name, level);
       return NULL;
     }
 

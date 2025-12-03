@@ -11,6 +11,8 @@
 #include <string.h>
 #include <time.h>
 
+#include "../../lib/include/nexus.h"
+
 #define MAX_AUDIT_ENTRIES 1000
 #define MAX_PERMISSIONS 128
 
@@ -21,14 +23,8 @@
 #define PERM_DELETE 0x08
 #define PERM_ADMIN 0x10
 
-// Governance levels
-typedef enum {
-  GOV_LEVEL_PUBLIC = 0, // Anyone can access
-  GOV_LEVEL_USER = 1,   // Authenticated users
-  GOV_LEVEL_OWNER = 2,  // Only owner
-  GOV_LEVEL_ADMIN = 3,  // System admins only
-  GOV_LEVEL_SYSTEM = 4  // System only
-} gov_level_t;
+// Governance levels (Defined in nexus.h)
+// typedef enum { ... } gov_level_t;
 
 // Enhanced audit entry
 typedef struct {
@@ -79,6 +75,9 @@ void gov_set_user(const char *user, gov_level_t level) {
 
 // Get current user
 const char *gov_get_current_user() { return current_user; }
+
+// Get current level
+gov_level_t gov_get_current_level() { return current_level; }
 
 // Log audit entry
 void gov_audit(const char *action, const char *resource, int success,

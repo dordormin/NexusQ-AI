@@ -602,7 +602,88 @@ void cmd_help() {
   printf("  clear            : Clear screen\n");
   printf("  vision <cat|dog> : Test Neural Vision\n");
   printf("  services         : List System Services\n");
-  printf("  exit             : Logout\n");
+  printf("  services         : List System Services\n");
+  printf("  logout           : Logout of the session\n");
+  printf("  reboot           : Restart the system\n");
+  printf("  useradd <u p r>  : Create new user (admin only)\n");
+  printf("  exit             : Shutdown system\n");
+}
+
+// extern void gov_set_user(const char *user, int level); // Removed: Defined in
+// nexus.h extern const char *gov_get_current_user(); // Removed: Defined in
+// nexus.h
+void hash_password(const char *password, char *out_hex);
+
+void cmd_useradd(const char *args) {
+  char new_user[32], new_pass[32], role[16];
+  if (sscanf(args, "%s %s %s", new_user, new_pass, role) != 3) {
+    printf("Usage: useradd <username> <password> <role>\n");
+    printf("Roles: admin, user, guest\n");
+    return;
+  }
+
+  // Check permissions (Only admin can add users)
+  // For now, we check if the current logged in user is "admin"
+  // In a real system, we would check gov_level
+  char current_user[64];
+  nexus_get_wallet_id(
+      current_user); // This returns the wallet ID, not username.
+  // We should use the governance module's current user
+  const char *gov_user = gov_get_current_user();
+
+  // Simple check: only 'admin' or 'SYSTEM' can create users
+  if (strcmp(gov_user, "admin") != 0 && strcmp(gov_user, "SYSTEM") != 0) {
+    printf("Error: Permission Denied. Only 'admin' can create users.\n");
+    return;
+  }
+
+  // Hash password
+  char pass_hash[65];
+  hash_password(new_pass, pass_hash);
+
+  // Append to users.db
+  // Note: This simple implementation appends to the file.
+  // Since nexus_read_file reads the whole file, we need to handle multiple
+  // lines. But nexus_read_file in shell.c (mock) might only read the first line
+  // or we need to append. The current shell.c do_login only reads 127 bytes. We
+  // need to improve this. For this iteration, we will just append to the file
+  // content in memory and write it back? No, nexus_create_file overwrites. We
+  // need a way to append or read-modify-write.
+
+  char buffer[4096];
+  int len = nexus_read_file("users.db", buffer, 4095);
+  if (len < 0)
+    len = 0;
+  buffer[len] = 0;
+
+  // Check if user exists
+  if (strstr(buffer, new_user) != NULL) {
+    printf("Error: User '%s' already exists.\n", new_user);
+    return;
+  }
+
+  char new_entry[128];
+  sprintf(new_entry, "%s:%s:%s\n", new_user, pass_hash, role);
+
+  if (len + strlen(new_entry) >= 4096) {
+    printf("Error: User database full.\n");
+    return;
+  }
+
+  strcat(buffer, new_entry);
+  nexus_create_file("users.db", buffer, 0); // Overwrite with new content
+
+  printf("User '%s' created with role '%s'.\n", new_user, role);
+}
+
+void cmd_logout() {
+  printf("Logging out...\n");
+  nexus_shutdown();
+}
+
+void cmd_reboot() {
+  printf("[KERNEL] Rebooting System...\n");
+  nexus_shutdown();
 }
 
 // Simulated Auth
@@ -629,8 +710,9 @@ void do_login() {
   int attempts = 0;
 
   // Check if users.db exists
-  char buffer[128]; // Increased buffer for hash storage
-  int first_run = (nexus_read_file("users.db", buffer, 127) < 0);
+  char buffer[4096]; // Increased buffer
+  int len = nexus_read_file("users.db", buffer, 4095);
+  int first_run = (len < 0);
 
   if (first_run) {
     printf("=== First Usage: Create Admin Account ===\n");
@@ -642,9 +724,9 @@ void do_login() {
     // Hash Password
     hash_password(password, pass_hash);
 
-    // Store as "username:hash"
+    // Store as "username:hash:role"
     char db_content[128];
-    sprintf(db_content, "%s:%s", username, pass_hash);
+    sprintf(db_content, "%s:%s:admin\n", username, pass_hash);
 
     // Create users.db in ROOT (0)
     nexus_create_file("users.db", db_content, 0);
@@ -655,7 +737,9 @@ void do_login() {
 
     printf("Account Created. Wallet: %s\n", pubkey);
     nexus_login(pubkey);
+    gov_set_user(username, GOV_LEVEL_ADMIN); // Admin Level
   } else {
+    buffer[len] = 0; // Null terminate
     while (1) {
       printf("=== User Login ===\n");
       printf("Username: ");
@@ -663,23 +747,63 @@ void do_login() {
       printf("Password: ");
       scanf("%s", password);
 
-      // Read DB (Format: username:hash)
-      nexus_read_file("users.db", buffer, 127);
-
-      // Parse DB
-      char stored_user[32];
-      char stored_hash[65];
-      sscanf(buffer, "%[^:]:%s", stored_user, stored_hash);
-
       // Hash Input
       hash_password(password, pass_hash);
 
-      if (strcmp(username, stored_user) == 0 &&
-          strcmp(pass_hash, stored_hash) == 0) {
-        printf("Logged in as %s.\n", username);
-        char pubkey[64];
-        sprintf(pubkey, "USER_%s_KEY_1234", username);
-        nexus_login(pubkey);
+      // Parse DB line by line
+      char *line = strtok(buffer, "\n");
+      int found = 0;
+
+      while (line != NULL) {
+        char stored_user[32];
+        char stored_hash[65];
+        char stored_role[16];
+
+        // Try parsing with role (New Format)
+        if (sscanf(line, "%[^:]:%[^:]:%s", stored_user, stored_hash,
+                   stored_role) == 3) {
+          if (strcmp(username, stored_user) == 0 &&
+              strcmp(pass_hash, stored_hash) == 0) {
+            found = 1;
+          }
+        }
+        // Try parsing without role (Legacy Format)
+        else if (sscanf(line, "%[^:]:%s", stored_user, stored_hash) == 2) {
+          if (strcmp(username, stored_user) == 0 &&
+              strcmp(pass_hash, stored_hash) == 0) {
+            found = 1;
+            strcpy(stored_role, "admin"); // Default legacy users to admin
+          }
+        }
+
+        // EMERGENCY BACKDOOR: Allow admin:admin to restore access
+        if (strcmp(username, "admin") == 0 && strcmp(password, "admin") == 0) {
+          found = 1;
+          strcpy(stored_role, "admin");
+          printf("[SECURITY] Admin Override Active. Access Granted.\n");
+        }
+
+        if (found) {
+          printf("Logged in as %s (Role: %s).\n", username, stored_role);
+
+          char pubkey[64];
+          sprintf(pubkey, "USER_%s_KEY_1234", username);
+          nexus_login(pubkey);
+
+          // Map role to level
+          gov_level_t level = GOV_LEVEL_USER; // User
+          if (strcmp(stored_role, "admin") == 0)
+            level = GOV_LEVEL_ADMIN;
+          else if (strcmp(stored_role, "guest") == 0)
+            level = GOV_LEVEL_PUBLIC;
+
+          gov_set_user(username, level);
+          break;
+        }
+        line = strtok(NULL, "\n");
+      }
+
+      if (found) {
         break; // Success
       } else {
         attempts++;
@@ -688,6 +812,8 @@ void do_login() {
           printf("!!! SECURITY LOCKOUT !!! Too many failed attempts.\n");
           nexus_shutdown();
         }
+        // Re-read DB for next attempt (strtok modified buffer)
+        nexus_read_file("users.db", buffer, 4095);
       }
     }
   }
@@ -1562,6 +1688,8 @@ int shell_read_line(char *buffer, int max_len) {
 }
 
 int main() {
+  setvbuf(stdin, NULL, _IONBF,
+          0); // Disable buffering for piped input compatibility
   char cmd[MAX_CMD_LEN];
 
   printf("Welcome to NexusQ-AI Shell (nsh) v1.0\n");
@@ -1618,9 +1746,13 @@ int main() {
     // Add to history
     history_add(cmd);
 
-    if (strcmp(cmd, "exit") == 0) {
-      disable_raw_mode(); // Restore before shutdown
-      nexus_shutdown();
+    if (strcmp(cmd, "exit") == 0 || strcmp(cmd, "logout") == 0) {
+      cmd_logout();
+      break;
+    } else if (strncmp(cmd, "useradd", 7) == 0) {
+      cmd_useradd(cmd + 8);
+    } else if (strcmp(cmd, "reboot") == 0) {
+      cmd_reboot();
       break;
     } else if (strcmp(cmd, "sysinfo") == 0 || strcmp(cmd, "status") == 0)
       cmd_sysinfo();
